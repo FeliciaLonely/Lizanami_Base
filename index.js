@@ -8,7 +8,6 @@
 require("./config/settings");
 
 const pino = require("pino");
-const path = require('path');
 const { Boom } = require("@hapi/boom");
 const axios = require("axios");
 const fs = require("fs");
@@ -32,144 +31,90 @@ const {
 } = require("@whiskeysockets/baileys");
 
 const { smsg } = require("./lib/myfunc");
-const getBuffer = async (url, options) => {
-    try {
-        options = options || {};
-        const res = await axios({
-            method: "get",
-            url,
-            headers: {
-                'DNT': 1,
-                'Upgrade-Insecure-Request': 1,
-            },
-            ...options,
-            responseType: 'arraybuffer'
-        });
-        return res.data;
-    } catch (err) {
-        return err;
-    }
-};
-const getSizeMedia = (path) => {
-    return new Promise((resolve, reject) => {
-        if (/http/.test(path)) {
-            axios.head(path)
-                .then((res) => {
-                    let length = parseInt(res.headers['content-length']);
-                    let size = exports.formatSize(length);
-                    if (!isNaN(length)) resolve(size);
-                })
-                .catch(reject);
-        } else if (Buffer.isBuffer(path)) {
-            let length = Buffer.byteLength(path);
-            let size = exports.formatSize(length);
-            if (!isNaN(length)) resolve(size);
-        } else {
-            reject("error path tidak valid");
-        }
-    });
-};
-const formatSize = (bytes, si = true, dp = 2) => {
-    const thresh = si ? 1000 : 1024;
-    if (Math.abs(bytes) < thresh) {
-        return bytes + ' B';
-    }
-    const units = si
-        ? ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-        : ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
-    let u = -1;
-    const r = 10 ** dp;
-    do {
-        bytes /= thresh;
-        ++u;
-    } while (Math.round(Math.abs(bytes) * r) / r >= thresh && u < units.length - 1);
-    return bytes.toFixed(dp) + ' ' + units[u];
-};
 
 const {
 	imageToWebp,
 	videoToWebp,
 	writeExifImg,
 	writeExifVid,
-} = require("./lib/watermarmark");
+} = require("./lib/watermark");
 
-(async () => {
-    const { version, isLatest } = await fetchLatestBaileysVersion();
-    console.log(chalk.magenta(`-- Using WA v${version.join('.')}, isLatest: ${isLatest} --`)); // Fixed template literal
-    
-    const pairingCode = true;
 
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-    });
+const pairingCode = true
 
-    const question = (text) => new Promise((resolve) => rl.question(text, resolve));
+const rl = readline.createInterface({
+	input: process.stdin,
+	output: process.stdout
+})
 
-    async function clientstart() {
-        const {
-            state,
-            saveCreds
-        } = await useMultiFileAuthState("session");
-        const usePairingCode = true;
+const question = (text) => new Promise((resolve) => rl.question(text, resolve))
 
-        const vynnoxbeyours = makeWASocket({
-            printQRInTerminal: !usePairingCode,
-            syncFullHistory: true,
-            markOnlineOnConnect: true,
-            connectTimeoutMs: 60000,
-            defaultQueryTimeoutMs: 0,
-            keepAliveIntervalMs: 10000,
-            generateHighQualityLinkPreview: true,
-            patchMessageBeforeSending: (message) => {
-                const requiresPatch = !!(
-                    message.buttonsMessage
-                    || message.templateMessage
-                    || message.listMessage
-                );
-                if (requiresPatch) {
-                    message = {
-                        viewOnceMessage: {
-                            message: {
-                                messageContextInfo: {
-                                    deviceListMetadataVersion: 2,
-                                    deviceListMetadata: {}
-                                },
-                                ...message
-                            }
-                        }
-                    };
-                }
-                return message;
-            },
-            version,
-            browser: ["Ubuntu", "Chrome", "20.0.04"],
-            logger: pino({
-                level: 'fatal'
-            }),
-            auth: {
-                creds: state.creds,
-                keys: makeCacheableSignalKeyStore(state.keys, pino().child({
-                    level: 'silent',
-                    stream: 'store'
-                })),
+async function clientstart() {
+	const {
+		state,
+		saveCreds
+	} = await useMultiFileAuthState("session")
+	const usePairingCode = true;
+
+    const vynnoxbeyours = makeWASocket({
+        printQRInTerminal: !usePairingCode,
+        syncFullHistory: true,
+        markOnlineOnConnect: true,
+        connectTimeoutMs: 60000,
+        defaultQueryTimeoutMs: 0,
+        keepAliveIntervalMs: 10000,
+        generateHighQualityLinkPreview: true,
+        patchMessageBeforeSending: (message) => {
+            const requiresPatch = !!(
+                message.buttonsMessage ||
+                message.templateMessage ||
+                message.listMessage
+            );
+            if (requiresPatch) {
+                message = {
+                    viewOnceMessage: {
+                        message: {
+                            messageContextInfo: {
+                                deviceListMetadataVersion: 2,
+                                deviceListMetadata: {},
+                            },
+                            ...message,
+                        },
+                    },
+                };
             }
-        });
-
-        if (usePairingCode && !vynnoxbeyours.authState.creds.registered) {
-            const phoneNumber = await question('Enter Your Number 62xxx');
-            const code = await vynnoxbeyours.requestPairingCode(phoneNumber);
-            console.log(`your pairing code: ${code}`);
-        }
-        const store = makeInMemoryStore({
-            logger: pino().child({
+            return message;
+        },
+        version: (await (await fetch('https://raw.githubusercontent.com/WhiskeySockets/Baileys/master/src/Defaults/baileys-version.json')).json()).version,
+        browser: ["Ubuntu", "Chrome", "20.0.04"],
+        logger: pino({
+            level: 'fatal'
+        }),
+        auth: {
+            creds: state.creds,
+            keys: makeCacheableSignalKeyStore(state.keys, pino().child({
                 level: 'silent',
                 stream: 'store'
-            })
-        });
-	    
-        store.bind(vynnoxbeyours.ev);
-      
+            })),
+        }
+    });
+    
+    if (usePairingCode && !vynnoxbeyours.authState.creds.registered) {
+        const phoneNumber = await question('Enter Your Number 62xxx:\n');
+        const code = await vynnoxbeyours.requestPairingCode(phoneNumber);
+        console.log(`your pairing code: ${code}`);
+    }
+    
+
+    const store = makeInMemoryStore({
+        logger: pino().child({ 
+            level: 'silent',
+            stream: 'store' 
+        }) 
+    });
+    
+    store.bind(vynnoxbeyours.ev);
+    
 	vynnoxbeyours.ev.on('messages.upsert', async chatUpdate => {
         try {
             let ciaa = chatUpdate.messages[0]
@@ -226,15 +171,14 @@ const {
 
 	vynnoxbeyours.getFile = async (PATH, save) => {
 		let res;
-	        let filename;
 		let data = Buffer.isBuffer(PATH) ? PATH : /^data:.*?\/.*?;base64,/i.test(PATH) ? Buffer.from(PATH.split`,` [1], "base64") : /^https?:\/\//.test(PATH) ? await (res = await getBuffer(PATH)) : fs.existsSync(PATH) ? ((filename = PATH), fs.readFileSync(PATH)) : typeof PATH === "string" ? PATH : Buffer.alloc(0);
 		let type = (await FileType.fromBuffer(data)) || {
 			mime: "application/octet-stream",
 			ext: ".bin",
 		};
-		filename = path.join(__dirname, "./src/" + new Date() * 1 + "." + type.ext);
-                if (data && save) fs.promises.writeFile(filename, data);
-                return {
+		filename = path.join(__filename, "./src/" + new Date() * 1 + "." + type.ext, );
+		if (data && save) fs.promises.writeFile(filename, data);
+		return {
 			res,
 			filename,
 			size: await getSizeMedia(data),
@@ -252,13 +196,13 @@ const {
 			data,
 			filename
 		} = types;
-		if ((res && res.status !== 200) || data.length <= 65536) {
-                try {
-                    throw {
-                        json: JSON.parse(data.toString())
-                    };
-                } catch (e) {
-                    if (e.json) throw e.json;
+		if ((res && res.status !== 200) || file.length <= 65536) {
+			try {
+				throw {
+					json: JSON.parse(file.toString()),
+				};
+			} catch (e) {
+				if (e.json) throw e.json;
 			}
 		}
 		let type = "",
@@ -311,6 +255,6 @@ let file = require.resolve(__filename)
 fs.watchFile(file, () => {
 	fs.unwatchFile(file)
 	console.log(chalk.redBright(`Update ${__filename}`))
-        delete require.cache[file]
+	delete require.cache[file]
 	require(file)
 })
