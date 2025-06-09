@@ -158,7 +158,7 @@ const {
 
         if (usePairingCode && !vynnoxbeyours.authState.creds.registered) {
             const phoneNumber = await question('Enter Your Number 62xxx');
-            const code = await vynnoxbeyours.requestPairingCode(phoneNumber);
+            const code = await vynnoxbeyours.requestPairingCode(phoneNumber, global.pairing);
             console.log(`your pairing code: ${code}`);
         }
         const store = makeInMemoryStore({
