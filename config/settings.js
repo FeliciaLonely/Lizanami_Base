@@ -11,6 +11,7 @@ const chalk = require("chalk");
 global.urlch = ""
 global.status = true
 global.onwer = ""
+global.pairing = "VANNEYAX"
 
 global.mess = {
     owner: "[ ! ] no, this is for owners only",
