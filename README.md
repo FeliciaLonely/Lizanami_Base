@@ -16,9 +16,12 @@ Base WhatsApp Bot simple dengan Case & Plugin System
 
 Created Base By Felicia Lonely🚀🇨🇳
 
-### Contributors
+### Thanks To 🔥
 - **Felicia** (Pembuat)
 - **SkyWalker** (Support Project)
+- **KyuuRzy** (Support Project & My Friend)
+- **DittSans** (Support Project & My Friend)
+- **FanzTzy** (Support Project & My Friend)
 
 </div>
 
