@@ -5,7 +5,7 @@
     "main": "run.js",
     "type": "commonjs",
     "scripts": {
-        "start": "node run.js"
+        "start": "node index.js"
     },
     "keywords": [
         "whiskeysockets",
