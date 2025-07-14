@@ -2,7 +2,7 @@
     "name": "Cannie-InesisX",
     "version": "18.0.0",
     "description": "WhatsApp Bot",
-    "main": "run.js",
+    "main": "index.js",
     "type": "commonjs",
     "scripts": {
         "start": "node index.js"
