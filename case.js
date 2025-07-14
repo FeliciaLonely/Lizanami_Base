@@ -8,6 +8,7 @@
 require('./config/settings');
 const fs = require('fs');
 const chalk = require("chalk");
+const path = require('path')
 
 module.exports = vynnoxbeyours = async (vynnoxbeyours, m, chatUpdate, ciaa, store) => {
     try {
@@ -43,13 +44,14 @@ module.exports = vynnoxbeyours = async (vynnoxbeyours, m, chatUpdate, ciaa, stor
         const text = q = args.join(" ");
         const from = m.key.remoteJid;
         const isGroup = from.endsWith("@g.us");
-        const isAdmins = isGroup ? groupAdmins.includes(m.sender) : false;
         const groupMetadata = isGroup ? await vynnoxbeyours.groupMetadata(m.chat).catch(() => null) : null;
-        const groupName = isGroup ? groupMetadata?.subject : "";
         const participants = isGroup ? groupMetadata?.participants : [];
         const groupAdmins = isGroup ? participants.filter(v => v.admin !== null).map(v => v.id) : [];
+
+        const isAdmins = isGroup ? groupAdmins.includes(m.sender) : false;
         const isGroupAdmins = isGroup ? groupAdmins.includes(m.sender) : false;
         const isBotGroupAdmins = isGroup ? groupAdmins.includes(botNumber) : false;
+        const groupName = isGroup ? groupMetadata?.subject : "";
 
         if (m.message) {
             console.log('\x1b[30m--------------------\x1b[0m');
@@ -157,7 +159,7 @@ module.exports = vynnoxbeyours = async (vynnoxbeyours, m, chatUpdate, ciaa, stor
             case 'menu': {
                 let botInfo = ``
                 vynnoxbeyours.sendMessage(m.chat, {
-                    image: { url: "urllu" },
+                    image: { url: "https://files.catbox.moe/e94nfk.jpg" },
                     caption: botInfo,
                     contextInfo: {
                         mentionedJid: [m.sender],
@@ -174,7 +176,7 @@ module.exports = vynnoxbeyours = async (vynnoxbeyours, m, chatUpdate, ciaa, stor
                             title: `🕸⃟𝐍𝐞͢𝐯𝐚𝐫𝐢𝐚𝐇͢𝐮͠𝐧͢𝐭𝐞𝐫𝐗᷍𝐱𝐱͢͡`,
                             body: `A simple WhatsApp bot uses JavaScript to respond to commands automatically.`,
                             mediaType: 1,
-                            thumbnailUrl: `thumblu`,
+                            thumbnailUrl: `https://files.catbox.moe/e94nfk.jpg`,
                             thumbnail: ``,
                             sourceUrl: `serahlu`
                         }
