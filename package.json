@@ -22,7 +22,7 @@
         "@google/generative-ai": "^0.24.1",
         "@hapi/boom": "^10.0.0",
         "@vreden/youtube_scraper": "*",
-        "@whiskeysockets/baileys": "github:FeliciaLonely/Cannie-ShenBail",
+        "@whiskeysockets/baileys": "github:FeliciaLonely/lizanami-808",
         "api-dylux": "^1.8.5",
         "archiver": "5.3.1",
         "awesome-phonenumber": "^6.4.0",
