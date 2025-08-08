@@ -7,10 +7,19 @@
 
 require('./config/settings');
 const fs = require('fs');
+const axios = require('axios');
 const chalk = require("chalk");
-const path = require('path')
-
-module.exports = vynnoxbeyours = async (vynnoxbeyours, m, chatUpdate, ciaa, store) => {
+const jimp = require("jimp")
+const util = require("util");
+const crypto  = require("crypto")
+const fetch = require("node-fetch")
+const moment = require("moment-timezone");
+const path = require("path")
+const os = require('os');
+const speed = require('performance-now')
+const { spawn, exec, execSync } = require('child_process');
+const { default: baileys, getContentType } = require("@whiskeysockets/baileys");
+module.exports = client = async (client, m, chatUpdate, store) => {
     try {
         const body = (
             m.mtype === "conversation" ? m.message.conversation :
@@ -22,54 +31,84 @@ module.exports = vynnoxbeyours = async (vynnoxbeyours, m, chatUpdate, ciaa, stor
             m.mtype === "templateButtonReplyMessage" ? m.message.templateButtonReplyMessage.selectedId :
             m.mtype === "interactiveResponseMessage" ? JSON.parse(m.msg.nativeFlowResponseMessage.paramsJson).id :
             m.mtype === "templateButtonReplyMessage" ? m.msg.selectedId :
-            m.mtype === "messageContextInfo" ? m.message.buttonsResponseMessage?.selectedButtonId || 
+            m.mtype === "messageContextInfo" ? m.message.buttonsResponseMessage?.selectedButtonId ||
             m.message.listResponseMessage?.singleSelectReply.selectedRowId || m.text : ""
-        ) || "";
-
+        );
+        
+        const sender = m.key.fromMe ? client.user.id.split(":")[0] + "@s.whatsapp.net" ||
+              client.user.id : m.key.participant || m.key.remoteJid;
+        
+        const senderNumber = sender.split('@')[0];
         const budy = (typeof m.text === 'string' ? m.text : '');
-
-        const ongner = JSON.parse(fs.readFileSync('./database/owner.json'));
-
-        const botNumber = await vynnoxbeyours.decodeJid(vynnoxbeyours.user.id);
-        const itsOwner = [botNumber, ...ongner, ...global.onwer]
-            .map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net')
-            .includes(m.sender);
+        const prefa = ["", "!", ".", ",", "🐤", "🗿"];
 
         const prefixRegex = /^[°zZ#$@*+,.?=''():√%!¢£¥€π¤ΠΦ_&><`™©®Δ^βα~¦|/\\©^]/;
         const prefix = prefixRegex.test(body) ? body.match(prefixRegex)[0] : '.';
+        const from = m.key.remoteJid;
+        const isGroup = from.endsWith("@g.us");
+        const botNumber = await client.decodeJid(client.user.id);
+        const isBot = botNumber.includes(senderNumber)
+        
         const isCmd = body.startsWith(prefix);
         const command = isCmd ? body.slice(prefix.length).trim().split(' ').shift().toLowerCase() : '';
+        const command2 = body.replace(prefix, '').trim().split(/ +/).shift().toLowerCase()
         const args = body.trim().split(/ +/).slice(1);
         const pushname = m.pushName || "No Name";
         const text = q = args.join(" ");
-        const from = m.key.remoteJid;
-        const isGroup = from.endsWith("@g.us");
-        const groupMetadata = isGroup ? await vynnoxbeyours.groupMetadata(m.chat).catch(() => null) : null;
-        const participants = isGroup ? groupMetadata?.participants : [];
-        const groupAdmins = isGroup ? participants.filter(v => v.admin !== null).map(v => v.id) : [];
+        const quoted = m.quoted ? m.quoted : m;
+        const mime = (quoted.msg || quoted).mimetype || '';
+        const qmsg = (quoted.msg || quoted);
+        const isMedia = /image|video|sticker|audio/.test(mime);
+        
+        const { smsg, fetchJson, sleep, formatSize, runtime } = require('./sh3nnminè/lib/myfunction');     
+        const cihuy = fs.readFileSync('./sh3nnminè/lib/media/laurine-wb.png')
+        const { fquoted } = require('./sh3nnminè/lib/fquoted')
 
-        const isAdmins = isGroup ? groupAdmins.includes(m.sender) : false;
-        const isGroupAdmins = isGroup ? groupAdmins.includes(m.sender) : false;
-        const isBotGroupAdmins = isGroup ? groupAdmins.includes(botNumber) : false;
-        const groupName = isGroup ? groupMetadata?.subject : "";
-
-        if (m.message) {
+        // group
+        const groupMetadata = m?.isGroup ? await client.groupMetadata(m.chat).catch(() => ({})) : {};
+        const groupName = m?.isGroup ? groupMetadata.subject || '' : '';
+        const participants = m?.isGroup ? groupMetadata.participants?.map(p => {
+            let admin = null;
+            if (p.admin === 'superadmin') admin = 'superadmin';
+            else if (p.admin === 'admin') admin = 'admin';
+            return {
+                id: p.id || null,
+                jid: p.jid || null,
+                lid: p.lid || null,
+                admin,
+                full: p
+            };
+        }) || []: [];
+        const groupOwner = m?.isGroup ? participants.find(p => p.admin === 'superadmin')?.jid || '' : '';
+        const groupAdmins = participants.filter(p => p.admin === 'admin' || p.admin === 'superadmin').map(p => p.jid || p.id);
+        const isBotAdmins = m?.isGroup ? groupAdmins.includes(botNumber) : false;
+        const isAdmins = m?.isGroup ? groupAdmins.includes(m.sender) : false;
+        const isGroupOwner = m?.isGroup ? groupOwner === m.sender : false;
+        const senderLid = (() => {
+            const p = participants.find(p => p.jid === m.sender);
+            return p?.lid || null;
+        })();
+        
+        if (isBot) {
             console.log('\x1b[30m--------------------\x1b[0m');
-            console.log(chalk.bgHex("#4a69bd").bold(`▢ New Message`));
+            console.log(chalk.bgHex("#4a69bd").bold(`▢ 新しいメッセージ`));
             console.log(
                 chalk.bgHex("#ffffff").black(
-                    `   ▢ Date: ${new Date().toLocaleString()} \n` +
-                    `   ▢ Message: ${body || m.mtype} \n` +
-                    `   ▢ Sender: ${pushname} \n` +
-                    `   ▢ JID: ${m.sender}`
+                    `   ⚘ Tanggal: ${new Date().toLocaleString()} \n` +
+                    `   ⚘ Pesan: ${m.body || m.mtype} \n` +
+                    `   ⚘ Sender: ${pushname} \n` +
+                    `   ⚘ JID: ${senderNumber} \n` +
+                    `   ⚘ LID: ${senderLid || '-'}`
                 )
             );
+            console.log();
+        }
 
             if (isGroup) {
                 console.log(
                     chalk.bgHex("#ffffff").black(
-                        `   ▢ Group: ${groupName} \n` +
-                        `   ▢ GroupJid: ${m.chat}`
+                        `   ⌕ Group: ${groupName} \n` +
+                        `   ⌕ GroupJid: ${m.chat}`
                     )
                 );
             }
