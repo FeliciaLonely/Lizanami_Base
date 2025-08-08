@@ -25,7 +25,7 @@
         "@whiskeysockets/baileys": "github:FeliciaLonely/lizanami-808",
         "api-dylux": "^1.8.5",
         "archiver": "5.3.1",
-        "awesome-phonenumber": "^6.4.0",
+        "awesome-phonenumber": "latest",
         "canvafy": "*",
         "canvas": "^3.0.1",
         "cfonts": "^3.3.0",
