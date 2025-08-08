@@ -19,7 +19,7 @@ const os = require('os');
 const speed = require('performance-now')
 const { spawn, exec, execSync } = require('child_process');
 const { default: baileys, getContentType } = require("@whiskeysockets/baileys");
-module.exports = client = async (client, m, chatUpdate, store) => {
+module.exports = vynnoxbeyours = async (vynnoxbeyours, m, chatUpdate, store) => {
     try {
         const body = (
             m.mtype === "conversation" ? m.message.conversation :
