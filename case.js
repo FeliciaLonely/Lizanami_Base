@@ -60,9 +60,7 @@ module.exports = client = async (client, m, chatUpdate, store) => {
         const qmsg = (quoted.msg || quoted);
         const isMedia = /image|video|sticker|audio/.test(mime);
         
-        const { smsg, fetchJson, sleep, formatSize, runtime } = require('./sh3nnminè/lib/myfunction');     
-        const cihuy = fs.readFileSync('./sh3nnminè/lib/media/laurine-wb.png')
-        const { fquoted } = require('./sh3nnminè/lib/fquoted')
+        const { smsg, fetchJson, sleep, formatSize, runtime } = require('./l lízanámi/myfunction');
 
         // group
         const groupMetadata = m?.isGroup ? await client.groupMetadata(m.chat).catch(() => ({})) : {};
