@@ -35,8 +35,8 @@ module.exports = vynnoxbeyours = async (vynnoxbeyours, m, chatUpdate, store) => 
             m.message.listResponseMessage?.singleSelectReply.selectedRowId || m.text : ""
         );
         
-        const sender = m.key.fromMe ? client.user.id.split(":")[0] + "@s.whatsapp.net" ||
-              client.user.id : m.key.participant || m.key.remoteJid;
+        const sender = m.key.fromMe ? vynnoxbeyours.user.id.split(":")[0] + "@s.whatsapp.net" ||
+              vynnoxbeyours.user.id : m.key.participant || m.key.remoteJid;
         
         const senderNumber = sender.split('@')[0];
         const budy = (typeof m.text === 'string' ? m.text : '');
@@ -46,7 +46,7 @@ module.exports = vynnoxbeyours = async (vynnoxbeyours, m, chatUpdate, store) => 
         const prefix = prefixRegex.test(body) ? body.match(prefixRegex)[0] : '.';
         const from = m.key.remoteJid;
         const isGroup = from.endsWith("@g.us");
-        const botNumber = await client.decodeJid(client.user.id);
+        const botNumber = await vynnoxbeyours.decodeJid(vynnoxbeyours.user.id);
         const isBot = botNumber.includes(senderNumber)
         
         const isCmd = body.startsWith(prefix);
@@ -63,7 +63,7 @@ module.exports = vynnoxbeyours = async (vynnoxbeyours, m, chatUpdate, store) => 
         const { smsg, fetchJson, sleep, formatSize, runtime } = require('./l lízanámi/myfunction');
 
         // group
-        const groupMetadata = m?.isGroup ? await client.groupMetadata(m.chat).catch(() => ({})) : {};
+        const groupMetadata = m?.isGroup ? await vynnoxbeyours.groupMetadata(m.chat).catch(() => ({})) : {};
         const groupName = m?.isGroup ? groupMetadata.subject || '' : '';
         const participants = m?.isGroup ? groupMetadata.participants?.map(p => {
             let admin = null;
